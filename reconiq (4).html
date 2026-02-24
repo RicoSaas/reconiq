@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReconIQ — Settlement Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#0D1B2A; --surface:#111E2D; --surface2:#162436; --surface3:#1A2B3D;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+  --white:#F0F4F8; --muted:#5C7A96; --blue:#4A90C4;
+  --gold:#F4A832; --gold-dim:rgba(244,168,50,0.08);
+  --green:#4CAF7D; --green-dim:rgba(76,175,125,0.08);
+  --red:#E05252; --red-dim:rgba(224,82,82,0.08);
+  --amber:#D4863A; --amber-dim:rgba(212,134,58,0.08);
+  --font-serif:'DM Serif Display',serif;
+  --font-sans:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--navy);color:var(--white);font-family:var(--font-sans);font-size:13px;display:flex;min-height:100vh;}
+
+/* ── SIDEBAR NAV ── */
+.nav{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+.nav-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:12px;}
+.nav-logo-text{font-family:var(--font-serif);font-size:20px;color:var(--white);}
+.nav-logo-text em{color:var(--gold);font-style:normal;}
+.nav-logo-sub{font-size:9px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:2px;margin-top:2px;}
+.nav-section{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:12px 20px 4px;font-family:var(--font-mono);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:var(--muted);font-size:12px;font-weight:500;transition:all 0.15s;position:relative;border-left:2px solid transparent;}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,0.03);}
+.nav-item.active{color:var(--white);background:rgba(244,168,50,0.07);border-left-color:var(--gold);}
+.nav-item .icon{font-size:14px;width:18px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-family:var(--font-mono);padding:2px 6px;border-radius:10px;}
+
+/* ── MAIN ── */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{height:54px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:40;}
+.topbar-title{font-family:var(--font-serif);font-size:20px;flex:1;}
+.topbar-title em{color:var(--gold);font-style:normal;}
+.mode-badge-btn{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;border:1px solid rgba(76,175,125,0.3);cursor:pointer;font-size:11px;font-weight:500;color:var(--green);background:rgba(76,175,125,0.05);transition:all 0.2s;}
+.mode-badge-btn:hover{background:rgba(76,175,125,0.1);}
+.mode-dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+.panels{flex:1;padding:28px;}
+.panel{display:none;}
+.panel.active{display:block!important;animation:fadeUp 0.25s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;gap:12px;margin-bottom:24px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--font-mono);margin-bottom:6px;}
+.kpi-val{font-family:var(--font-serif);font-size:26px;color:var(--white);}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+.kpi-flag{font-size:9px;margin-top:6px;padding:3px 8px;border-radius:6px;display:inline-block;}
+
+/* ── SECTION HEADERS ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;margin-top:8px;}
+.sec-title{font-family:var(--font-serif);font-size:18px;color:var(--white);}
+.sec-title em{color:var(--gold);font-style:normal;}
+.tag{font-size:10px;color:var(--muted);font-family:var(--font-mono);background:var(--surface2);padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:24px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:var(--surface2);color:var(--muted);font-weight:500;font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:10px 14px;text-align:left;white-space:nowrap;}
+td{padding:11px 14px;border-top:1px solid var(--border);vertical-align:middle;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.mono{font-family:var(--font-mono);}
+.mid{font-family:var(--font-mono);font-size:11px;background:var(--surface3);padding:3px 8px;border-radius:6px;color:var(--blue);}
+
+/* ── BADGES ── */
+.badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;font-family:var(--font-mono);}
+.b-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(76,175,125,0.2);}
+.b-mon{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(212,134,58,0.2);}
+.b-high{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,82,82,0.2);}
+.b-disc{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,82,82,0.2);}
+.b-matched{background:var(--green-dim);color:var(--green);border:1px solid rgba(76,175,125,0.2);}
+.b-pend{background:rgba(74,144,196,0.1);color:var(--blue);border:1px solid rgba(74,144,196,0.2);}
+.b-warn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(212,134,58,0.2);}
+.b-active{background:var(--green-dim);color:var(--green);border:1px solid rgba(76,175,125,0.2);}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;}
+.card-title{font-family:var(--font-serif);font-size:15px;margin-bottom:12px;color:var(--white);}
+.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+
+/* ── ALERT BANNER ── */
+.alert{display:flex;gap:14px;padding:14px 18px;border-radius:12px;border:1px solid;border-left-width:3px;margin-bottom:20px;align-items:flex-start;}
+.alert-icon{font-size:18px;margin-top:1px;flex-shrink:0;}
+.alert-body{font-size:12px;line-height:1.7;color:var(--muted);}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-family:var(--font-sans);font-size:13px;font-weight:500;transition:all 0.2s;}
+.btn-gold{background:var(--gold);color:var(--navy);}
+.btn-gold:hover{background:#e09520;}
+.btn-ghost{background:var(--surface2);color:var(--white);border:1px solid var(--border2);}
+.btn-ghost:hover{background:var(--surface3);}
+
+/* ── PORTFOLIO CARDS (FI MODE) ── */
+.portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.portfolio-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s;display:flex;flex-direction:column;}
+.portfolio-card:hover{border-color:rgba(244,168,50,0.5);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.3);}
+.pc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.pc-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-type{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:3px;}
+.pc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;}
+.pc-stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.pc-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--font-mono);margin-bottom:4px;}
+.pc-stat-val{font-family:var(--font-mono);font-size:14px;font-weight:600;}
+.pc-footer{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.pc-footer-lbl{font-size:10px;color:var(--muted);}
+
+/* ── HEAT MAP ── */
+.heat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:24px;}
+.heat-cell{border-radius:10px;padding:14px 10px;text-align:center;border:1px solid var(--border);cursor:pointer;transition:transform 0.15s;}
+.heat-cell:hover{transform:translateY(-2px);}
+.heat-mid{font-family:var(--font-mono);font-size:11px;font-weight:600;margin-bottom:4px;}
+.heat-val{font-family:var(--font-serif);font-size:20px;}
+.heat-lbl{font-size:9px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+
+/* ── RESERVE TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.tl-item{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:border-color 0.2s;}
+.tl-item:hover{border-color:rgba(244,168,50,0.3);}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.tl-mid{font-family:var(--font-mono);font-size:11px;color:var(--blue);width:60px;flex-shrink:0;}
+.tl-name{font-size:12px;font-weight:500;flex:1;}
+.tl-amt{font-family:var(--font-serif);font-size:16px;color:var(--gold);}
+.tl-date{font-family:var(--font-mono);font-size:11px;color:var(--muted);}
+.tl-badge{margin-left:8px;}
+
+/* ── RECON CARDS ── */
+.recon-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.recon-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;cursor:pointer;transition:border-color 0.2s;}
+.recon-card:hover{border-color:rgba(244,168,50,0.3);}
+.recon-card.matched{border-left:3px solid var(--green);}
+.recon-card.disc{border-left:3px solid var(--red);}
+.recon-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.recon-mid-name{font-family:var(--font-serif);font-size:16px;}
+.recon-amounts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.recon-amt-box{background:var(--surface2);border-radius:8px;padding:8px 10px;}
+.recon-amt-lbl{font-size:9px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.recon-amt-val{font-family:var(--font-mono);font-size:13px;font-weight:500;}
+
+/* ── ADD ENTRY FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;}
+.form-input{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--white);font-family:var(--font-sans);font-size:13px;outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--gold);}
+.form-select{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--white);font-family:var(--font-sans);font-size:13px;outline:none;}
+.calc-preview{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px;display:none;margin-bottom:16px;}
+.calc-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.calc-row:last-child{border-bottom:none;font-weight:600;}
+.tabs{display:flex;gap:4px;margin-bottom:20px;}
+.tab{padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--muted);transition:all 0.15s;}
+.tab.active{background:var(--gold);color:var(--navy);}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{border:2px dashed rgba(244,168,50,0.25);border-radius:14px;padding:40px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(244,168,50,0.02);}
+.upload-zone:hover{border-color:rgba(244,168,50,0.5);background:rgba(244,168,50,0.04);}
+.col-list{display:flex;flex-direction:column;gap:6px;}
+.col-item{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--surface2);border-radius:8px;}
+.col-num{font-family:var(--font-mono);font-size:10px;color:var(--gold);width:20px;}
+.col-name{font-family:var(--font-mono);font-size:11px;color:var(--white);}
+
+/* ── HELP ── */
+.help-section{margin-bottom:24px;}
+.help-section h3{font-family:var(--font-serif);font-size:16px;color:var(--gold);margin-bottom:10px;}
+.help-section p,.help-section li{font-size:12px;color:var(--muted);line-height:1.8;}
+.help-section li{margin-left:16px;margin-bottom:4px;}
+.threshold-table{width:100%;border-collapse:collapse;font-size:11px;}
+.threshold-table th{background:var(--surface2);padding:8px 12px;text-align:left;font-family:var(--font-mono);font-size:10px;color:var(--muted);}
+.threshold-table td{padding:8px 12px;border-top:1px solid var(--border);}
+
+/* ── ACTION DRAWER ── */
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.drawer{position:fixed;right:0;top:0;bottom:0;width:420px;background:var(--surface);border-left:1px solid var(--border2);z-index:201;overflow-y:auto;padding:28px;animation:slideIn 0.25s ease;}
+.drawer-close{position:absolute;top:20px;right:20px;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;}
+.drawer-close:hover{color:var(--white);}
+.drawer-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.drawer-kpi{background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border);}
+.drawer-kpi-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:4px;}
+.drawer-kpi-val{font-family:var(--font-serif);font-size:24px;}
+.drawer-status{padding:12px 14px;border-radius:10px;margin-bottom:20px;font-size:11px;font-weight:600;}
+.step-list{display:flex;flex-direction:column;gap:8px;}
+.step-item{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
+.step-num{font-family:var(--font-mono);font-size:11px;color:var(--gold);width:18px;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:12px;line-height:1.6;color:var(--muted);}
+.drawer-hist{margin-top:20px;padding-top:20px;border-top:1px solid var(--border);}
+.hist-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+
+/* ── ONBOARDING ── */
+.onboard-overlay{position:fixed;inset:0;background:rgba(10,18,28,0.97);z-index:500;display:flex;align-items:center;justify-content:center;}
+.onboard-box{background:var(--surface);border:1px solid var(--border2);border-radius:24px;padding:48px;max-width:600px;width:90%;text-align:center;}
+.onboard-step{display:none;}
+.onboard-step.active{display:block;}
+.ob-pill{display:inline-block;background:var(--gold-dim);color:var(--gold);font-size:10px;font-family:var(--font-mono);padding:5px 14px;border-radius:20px;border:1px solid rgba(244,168,50,0.2);margin-bottom:20px;text-transform:uppercase;letter-spacing:2px;}
+.ob-title{font-family:var(--font-serif);font-size:36px;line-height:1.2;margin-bottom:16px;}
+.ob-title em{color:var(--gold);font-style:normal;}
+.ob-body{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:28px;}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin-bottom:20px;}
+.ob-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);}
+.ob-dot.active{background:var(--gold);}
+.ob-footer{display:flex;align-items:center;justify-content:space-between;}
+
+/* ── MODE OVERLAY ── */
+.mode-overlay{position:fixed;inset:0;background:rgba(10,18,28,0.97);z-index:400;display:none;align-items:center;justify-content:center;}
+.mode-box{max-width:860px;width:95%;text-align:center;}
+.mode-eyebrow{font-size:10px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:3px;margin-bottom:12px;}
+.mode-headline{font-family:var(--font-serif);font-size:40px;line-height:1.2;margin-bottom:12px;}
+.mode-headline em{color:var(--gold);font-style:normal;}
+.mode-sub{font-size:13px;color:var(--muted);margin-bottom:32px;line-height:1.7;}
+.mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;}
+.mode-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:24px;cursor:pointer;text-align:left;transition:all 0.2s;}
+.mode-card:hover{border-color:rgba(244,168,50,0.4);transform:translateY(-2px);}
+.mode-card.selected{border-color:var(--gold);background:rgba(244,168,50,0.05);}
+.mode-icon{font-size:30px;margin-bottom:12px;}
+.mode-card-title{font-family:var(--font-serif);font-size:16px;margin-bottom:8px;}
+.mode-card-desc{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:12px;}
+.mode-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.mode-tag{font-size:9px;background:var(--surface2);color:var(--muted);padding:3px 8px;border-radius:10px;font-family:var(--font-mono);}
+.mode-footer{font-size:11px;color:var(--muted);}
+.mode-footer span{color:var(--gold);cursor:pointer;text-decoration:underline;}
+
+/* ── NOTIFICATION ── */
+.notif{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border2);border-left:3px solid var(--green);border-radius:10px;padding:12px 18px;font-size:12px;z-index:300;transform:translateY(20px);opacity:0;transition:all 0.3s;pointer-events:none;}
+.notif.show{transform:translateY(0);opacity:1;}
+
+/* ── MERCHANT MODE SPECIFIC STYLES ── */
+.insight-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.insight-card:hover{border-color:rgba(244,168,50,0.35);transform:translateY(-1px);}
+.insight-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.insight-card.ok::before{background:var(--green);}
+.insight-card.warn::before{background:var(--amber);}
+.insight-card.crit::before{background:var(--red);}
+.insight-label{font-size:10px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+.insight-val{font-family:var(--font-serif);font-size:28px;margin-bottom:4px;}
+.insight-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.insight-action{font-size:10px;margin-top:8px;font-weight:600;}
+.action-checklist{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.action-item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
+.action-num{font-family:var(--font-mono);font-size:11px;color:var(--gold);width:20px;flex-shrink:0;}
+.action-text{font-size:12px;line-height:1.6;color:var(--muted);}
+.action-text strong{color:var(--white);}
+</style>
+</head>
+<body>
+
+<!-- ══ ONBOARDING ══ -->
+<div class="onboard-overlay" id="onboard">
+  <div class="onboard-box">
+    <div class="onboard-step active" id="ob1">
+      <div class="ob-pill">Demo Mode</div>
+      <div class="ob-title">Your settlement<br><em>intelligence layer</em></div>
+      <div class="ob-body">ReconIQ monitors your settlements, tracks chargebacks against card scheme thresholds, and tells you exactly what to do when something goes wrong.<br><br>You're viewing <strong style="color:var(--white)">demo data</strong> — five realistic merchants. None of this is your live data yet.</div>
+      <div class="ob-dots"><div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div></div>
+      <div class="ob-footer" style="justify-content:flex-end;"><button class="btn btn-gold" onclick="obNext(2)">Next →</button></div>
+    </div>
+    <div class="onboard-step" id="ob2">
+      <div class="ob-pill">The Problem</div>
+      <div class="ob-title">Three ways you're<br><em>losing money silently</em></div>
+      <div class="ob-body">
+        <strong style="color:var(--white)">1. Settlement errors</strong> — Acquirers make calculation mistakes. Without reconciliation you never catch them.<br><br>
+        <strong style="color:var(--white)">2. Chargeback creep</strong> — Your ratio climbs past Visa thresholds before you notice. Then your account gets terminated.<br><br>
+        <strong style="color:var(--white)">3. Reserve black box</strong> — Thousands locked by your acquirer with no visibility on when it releases.
+      </div>
+      <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot active"></div><div class="ob-dot"></div></div>
+      <div class="ob-footer"><button class="btn btn-ghost" onclick="obNext(1)">← Back</button><button class="btn btn-gold" onclick="obNext(3)">Next →</button></div>
+    </div>
+    <div class="onboard-step" id="ob3">
+      <div class="ob-pill">What ReconIQ Does</div>
+      <div class="ob-title">Built for<br><em>high-risk payments</em></div>
+      <div class="ob-body">ReconIQ compares acquirer statements against bank deposits, monitors chargeback ratios in real time against Visa and Mastercard thresholds, and tracks every reserve tranche with its exact release date. When something goes red — it tells you the numbered steps to fix it.</div>
+      <div class="ob-dots"><div class="ob-dot"></div><div class="ob-dot"></div><div class="ob-dot active"></div></div>
+      <div class="ob-footer"><button class="btn btn-ghost" onclick="obNext(2)">← Back</button><button class="btn btn-gold" onclick="closeOnboard()">Get Started →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODE OVERLAY ══ -->
+<div class="mode-overlay" id="mode-overlay">
+  <div class="mode-box">
+    <div class="mode-eyebrow">Welcome to ReconIQ</div>
+    <div class="mode-headline">Who are you managing<br>settlements <em>for?</em></div>
+    <div class="mode-sub">ReconIQ adapts its dashboard and tools to your role. Switch at any time from the top bar.</div>
+    <div class="mode-cards">
+      <div class="mode-card" id="mc-merchant" onclick="selectMode('merchant',this)">
+        <div class="mode-icon">🏪</div>
+        <div class="mode-card-title">I'm a Merchant</div>
+        <div class="mode-card-desc">I process card payments and need to reconcile my own settlements, monitor my chargeback ratio, and track my rolling reserve release dates.</div>
+        <div class="mode-tags"><span class="mode-tag">eCommerce</span><span class="mode-tag">Gaming</span><span class="mode-tag">Crypto</span><span class="mode-tag">Travel</span><span class="mode-tag">SaaS</span></div>
+      </div>
+      <div class="mode-card" id="mc-fi" onclick="selectMode('fi',this)">
+        <div class="mode-icon">🏦</div>
+        <div class="mode-card-title">I'm a Financial Institution</div>
+        <div class="mode-card-desc">I manage settlements across a portfolio of merchants. I need to monitor chargeback exposure, reserve positions, and reconciliation health across every account.</div>
+        <div class="mode-tags"><span class="mode-tag">PSP</span><span class="mode-tag">Acquirer</span><span class="mode-tag">EMI</span><span class="mode-tag">ISO</span><span class="mode-tag">BaaS</span></div>
+      </div>
+      <div class="mode-card" id="mc-compliance" onclick="selectMode('compliance',this)">
+        <div class="mode-icon">🔍</div>
+        <div class="mode-card-title">I'm a Compliance Officer</div>
+        <div class="mode-card-desc">I review, sign off, and escalate. I need a read-only risk summary showing every flag, breach, and anomaly — ready for board reporting or regulatory inspection.</div>
+        <div class="mode-tags"><span class="mode-tag">MLRO</span><span class="mode-tag">CRO</span><span class="mode-tag">CFO</span><span class="mode-tag">Audit</span></div>
+      </div>
+    </div>
+    <button class="btn btn-gold" id="mode-confirm-btn" onclick="confirmMode()" style="padding:13px 36px;font-size:14px;opacity:0.4;" disabled>Select a mode to continue →</button>
+    <div class="mode-footer" style="margin-top:16px;">Not sure? <span onclick="selectMode('merchant',document.getElementById('mc-merchant'));confirmMode()">Enter as Merchant</span> — you can always switch later.</div>
+  </div>
+</div>
+
+<!-- ══ NOTIFICATION ══ -->
+<div class="notif" id="notif"></div>
+
+<!-- ══ SIDEBAR ══ -->
+<nav class="nav" id="sidebar">
+  <div class="nav-logo">
+    <div class="nav-logo-text">Recon<em>IQ</em></div>
+    <div class="nav-logo-sub">Settlement Intelligence</div>
+  </div>
+  <div id="nav-items"><!-- injected by JS --></div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="pg-title">Portfolio <em>Overview</em></div>
+    <div class="mode-badge-btn" id="mode-badge-btn" onclick="showModeSwitch()">
+      <div class="mode-dot" id="mode-dot"></div>
+      <span id="mode-badge-label">Merchant</span>
+      <span style="color:var(--muted);font-size:10px;">↕ switch</span>
+    </div>
+  </div>
+  <div class="panels" id="panels">
+
+    <!-- ══════════════════════════════════════════
+         MERCHANT MODE PANELS
+    ══════════════════════════════════════════ -->
+
+    <!-- MERCHANT: Overview -->
+    <div class="panel active" id="panel-overview">
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);" id="m-kpi-grid">
+        <div class="kpi"><div class="kpi-label">My Gross Volume</div><div class="kpi-val" id="m-gross">—</div><div class="kpi-sub">Total processed this period</div></div>
+        <div class="kpi"><div class="kpi-label">My Chargeback Ratio</div><div class="kpi-val" id="m-cbr" style="color:var(--red)">—</div><div class="kpi-sub" id="m-cbr-sub">vs Visa 0.65% threshold</div></div>
+        <div class="kpi"><div class="kpi-label">Reserve Held Against Me</div><div class="kpi-val" id="m-res" style="color:var(--amber)">—</div><div class="kpi-sub" id="m-res-sub">Locked by my acquirer</div></div>
+        <div class="kpi"><div class="kpi-label">Settlement Discrepancies</div><div class="kpi-val" id="m-disc" style="color:var(--red)">—</div><div class="kpi-sub">Unexplained shortfalls</div></div>
+      </div>
+
+      <div class="sec-hdr"><div class="sec-title">My <em>Situation at a Glance</em></div><div class="tag">Click any card for action steps</div></div>
+      <div class="insight-cards" id="m-insights"><!-- rendered by JS --></div>
+
+      <div class="sec-hdr"><div class="sec-title">My Recent <em>Settlements</em></div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Gross</th><th>Fees Deducted</th><th>Net Expected</th><th>Bank Received</th><th>Difference</th><th>Status</th></tr></thead>
+          <tbody id="m-stmt-body"></tbody>
+        </table>
+      </div>
+
+      <div class="sec-hdr"><div class="sec-title">What to <em>Do Next</em></div></div>
+      <div class="action-checklist" id="m-actions"><!-- rendered by JS --></div>
+    </div>
+
+    <!-- MERCHANT: My Statements -->
+    <div class="panel" id="panel-statements">
+      <div class="alert" style="background:rgba(74,144,196,0.06);border-color:rgba(74,144,196,0.2);border-left-color:var(--blue);">
+        <div class="alert-icon">📋</div>
+        <div class="alert-body">These are <strong style="color:var(--white)">your acquirer statements</strong> — what your payment processor told you they sent. Compare the Net Expected column against your bank statement to spot discrepancies. Any row with a red Discrepancy badge means money is either missing or unexplained.</div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">My Acquirer <em>Statements</em></div><div class="tag">Click any row to investigate</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Gross Amount</th><th>Fees</th><th>Refunds</th><th>Chargebacks</th><th>Reserve Held</th><th>Net Expected</th><th>Bank Received</th><th>Difference</th><th>Status</th></tr></thead>
+          <tbody id="m-full-stmts"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MERCHANT: My Chargebacks -->
+    <div class="panel" id="panel-chargebacks">
+      <div class="alert" style="background:rgba(224,82,82,0.06);border-color:rgba(224,82,82,0.2);border-left-color:var(--red);">
+        <div class="alert-icon">🔥</div>
+        <div class="alert-body"><strong style="color:var(--white)">Chargebacks are disputes raised by your customers' banks.</strong> Your acquirer tracks what percentage of your transactions become chargebacks. If this ratio exceeds Visa's or Mastercard's thresholds, they will place you in a monitoring programme — and if it continues, your account gets terminated. Watch this number closely.</div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi"><div class="kpi-label">My CB Ratio</div><div class="kpi-val" id="mcb-ratio" style="color:var(--red)">—</div><div class="kpi-sub">My chargeback % this period</div></div>
+        <div class="kpi"><div class="kpi-label">Total CB Value</div><div class="kpi-val" id="mcb-val" style="color:var(--red)">—</div><div class="kpi-sub">Money lost to disputes</div></div>
+        <div class="kpi"><div class="kpi-label">Visa Threshold</div><div class="kpi-val" style="color:var(--muted)">0.65%</div><div class="kpi-sub">VAMP entry point — stay below</div></div>
+        <div class="kpi"><div class="kpi-label">My Status</div><div class="kpi-val" id="mcb-status" style="font-size:18px;">—</div><div class="kpi-sub" id="mcb-status-sub"></div></div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">Chargeback <em>Threshold Guide</em></div><div class="tag">What these mean for me</div></div>
+      <div class="three-col">
+        <div class="card">
+          <div class="card-title" style="color:var(--green)">🟢 Safe Zone — Below 0.65%</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;">You're compliant. No scheme monitoring. Focus on keeping it here — a sudden spike from a bad batch of transactions can push you above threshold quickly. Review your refund process and transaction descriptors monthly.</div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color:var(--amber)">🟡 VAMP / ECM — 0.65% to 1.80%</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;">Visa has placed you in a monitoring programme. Your acquirer has been notified. You'll receive a formal letter. You have 30 days to show improvement. At ECM (≥0.90%) fines begin. Start a remediation plan immediately — document everything.</div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color:var(--red)">🔴 HCM / MATCH — Above 1.80%</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;">Critical. Your acquirer is under pressure from Visa to suspend your MID. If it reaches 2.00%+ and stays there, you risk being placed on the MATCH list — a blacklist shared across the industry that makes it very difficult to get processing anywhere.</div>
+        </div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">What To Do <em>About My Chargebacks</em></div></div>
+      <div class="action-checklist">
+        <div class="action-item"><div class="action-num">1</div><div class="action-text"><strong>Find where disputes are coming from.</strong> Ask your acquirer for a chargeback reason code breakdown. Most disputes fall into a small number of reason codes — "goods not as described", "transaction not recognised", "subscription cancelled". Each has a specific fix.</div></div>
+        <div class="action-item"><div class="action-num">2</div><div class="action-text"><strong>Fix your transaction descriptor.</strong> The most common cause of "transaction not recognised" is a confusing merchant name on the bank statement. Make your descriptor match what the customer sees on your website.</div></div>
+        <div class="action-item"><div class="action-num">3</div><div class="action-text"><strong>Make your refund policy visible and fast.</strong> Customers who can't get a refund easily escalate to a chargeback. A 24-hour refund response window typically reduces dispute rates by 30–50%.</div></div>
+        <div class="action-item"><div class="action-num">4</div><div class="action-text"><strong>Contact your acquirer proactively.</strong> If your ratio is rising, email your account manager before they contact you. Self-reporting shows good faith and typically results in more lenient treatment than being caught in a routine review.</div></div>
+        <div class="action-item"><div class="action-num">5</div><div class="action-text"><strong>Document your remediation plan in writing.</strong> Card schemes favour merchants who can show a documented response. A one-page plan with root cause analysis, actions taken, and expected timeline can be the difference between a warning and a termination.</div></div>
+      </div>
+    </div>
+
+    <!-- MERCHANT: My Reserves -->
+    <div class="panel" id="panel-reserves">
+      <div class="alert" style="background:rgba(212,134,58,0.06);border-color:rgba(212,134,58,0.2);border-left-color:var(--amber);">
+        <div class="alert-icon">🔒</div>
+        <div class="alert-body"><strong style="color:var(--white)">A rolling reserve is money your acquirer holds back from your settlements</strong> as a buffer against future chargebacks. They take a percentage of each settlement and hold it for a fixed period — typically 90 to 180 days. After that period elapses, it should be released back to you. This screen tells you exactly when each tranche is due back.</div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kpi"><div class="kpi-label">Total Held Against Me</div><div class="kpi-val" id="mr-total" style="color:var(--amber)">—</div><div class="kpi-sub">Locked by my acquirer right now</div></div>
+        <div class="kpi"><div class="kpi-label">Next Release Date</div><div class="kpi-val" id="mr-next" style="font-size:18px;color:var(--blue)">—</div><div class="kpi-sub">First tranche coming back to me</div></div>
+        <div class="kpi"><div class="kpi-label">Total Tranches</div><div class="kpi-val" id="mr-count">—</div><div class="kpi-sub">Reserve hold periods tracked</div></div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">My Reserve <em>Release Schedule</em></div><div class="tag">Click any row to dispute or track</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Statement Date</th><th>Amount Held</th><th>Reserve Rate</th><th>Hold Period</th><th>Expected Release</th><th>Days Until Release</th><th>Status</th></tr></thead>
+          <tbody id="m-reserves-body"></tbody>
+        </table>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">If a Release is <em>Late or Missing</em></div></div>
+      <div class="action-checklist">
+        <div class="action-item"><div class="action-num">1</div><div class="action-text"><strong>Wait 5 business days after the expected date</strong> before escalating — some acquirers process releases in batch cycles.</div></div>
+        <div class="action-item"><div class="action-num">2</div><div class="action-text"><strong>Email your acquirer settlements team</strong> (not your account manager — the ops team). Reference the specific statement date, the reserve amount, and the calculated release date. Ask for written confirmation of the release timeline.</div></div>
+        <div class="action-item"><div class="action-num">3</div><div class="action-text"><strong>If no response within 5 business days</strong>, escalate in writing to your account manager and copy their compliance or legal team. State that the reserve hold period has elapsed per the contract terms.</div></div>
+        <div class="action-item"><div class="action-num">4</div><div class="action-text"><strong>Check your merchant agreement</strong> for the exact reserve release clause. If the acquirer is holding beyond the contractual period without justification, this is a breach of contract. Keep all correspondence.</div></div>
+      </div>
+    </div>
+
+    <!-- MERCHANT: Add Entry -->
+    <div class="panel" id="panel-add">
+      <div class="tabs">
+        <div class="tab active" onclick="aTab(this,'stmt')">Add Statement</div>
+        <div class="tab" onclick="aTab(this,'sett')">Add Settlement</div>
+        <div class="tab" onclick="aTab(this,'merch')">Add Merchant Profile</div>
+      </div>
+
+      <!-- Add Statement -->
+      <div id="add-stmt">
+        <div class="card">
+          <div class="card-title">Enter Acquirer Statement</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">This is what your acquirer told you they sent. Enter the figures from your statement PDF or portal.</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Statement Date</label><input class="form-input" type="date" id="f-date" oninput="liveCalc()"></div>
+            <div class="form-group"><label class="form-label">MID (Merchant ID)</label><input class="form-input" type="text" id="f-mid" placeholder="e.g. MID001"></div>
+            <div class="form-group"><label class="form-label">Gross Amount (£)</label><input class="form-input" type="number" id="f-gross" placeholder="10000" oninput="liveCalc()"></div>
+            <div class="form-group"><label class="form-label">Acquirer Fees (£)</label><input class="form-input" type="number" id="f-fee" placeholder="600" oninput="liveCalc()"></div>
+            <div class="form-group"><label class="form-label">Refunds (£)</label><input class="form-input" type="number" id="f-refund" placeholder="200" oninput="liveCalc()"></div>
+            <div class="form-group"><label class="form-label">Chargebacks (£)</label><input class="form-input" type="number" id="f-cb" placeholder="150" oninput="liveCalc()"></div>
+            <div class="form-group"><label class="form-label">Reserve Held (£)</label><input class="form-input" type="number" id="f-res" placeholder="1000" oninput="liveCalc()"></div>
+            <div class="form-group"><label class="form-label">Reserve Period (days)</label><input class="form-input" type="number" id="f-period" placeholder="180" value="180" oninput="liveCalc()"></div>
+          </div>
+          <div class="calc-preview" id="calc-prev">
+            <div class="calc-row"><span style="color:var(--muted)">Net Expected</span><span class="mono" id="f-net" style="color:var(--white);font-size:14px;"></span></div>
+            <div class="calc-row"><span style="color:var(--muted)">CB Ratio</span><span class="mono" id="p-cbr"></span></div>
+            <div class="calc-row"><span style="color:var(--muted)">CB Status</span><span id="p-status"></span></div>
+            <div class="calc-row"><span style="color:var(--muted)">Reserve Release Date</span><span class="mono" id="p-rel"></span></div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-gold" onclick="saveStmt()">Save Statement</button>
+            <button class="btn btn-ghost" onclick="clearStmt()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Settlement -->
+      <div id="add-sett" style="display:none;">
+        <div class="card">
+          <div class="card-title">Record Bank Receipt</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">This is what actually arrived in your bank account. ReconIQ will compare it against the statement to flag any discrepancy.</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Settlement Date</label><input class="form-input" type="date" id="s-date"></div>
+            <div class="form-group"><label class="form-label">MID</label><input class="form-input" type="text" id="s-mid" placeholder="e.g. MID001"></div>
+            <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Net Amount Received (£)</label><input class="form-input" type="number" id="s-amount" placeholder="8050"></div>
+          </div>
+          <button class="btn btn-gold" onclick="saveSett()">Record Settlement</button>
+        </div>
+      </div>
+
+      <!-- Add Merchant Profile -->
+      <div id="add-merch" style="display:none;">
+        <div class="card">
+          <div class="card-title">Add Merchant Profile</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">Create a profile for a merchant ID. This sets the reserve terms that ReconIQ uses to calculate release dates.</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">MID</label><input class="form-input" type="text" id="m-mid" placeholder="MID006"></div>
+            <div class="form-group"><label class="form-label">Merchant Name</label><input class="form-input" type="text" id="m-name" placeholder="Example Ltd"></div>
+            <div class="form-group"><label class="form-label">Business Type</label><input class="form-input" type="text" id="m-type" placeholder="eCommerce"></div>
+            <div class="form-group"><label class="form-label">Jurisdiction</label><input class="form-input" type="text" id="m-jur" placeholder="United Kingdom"></div>
+            <div class="form-group"><label class="form-label">Reserve %</label><input class="form-input" type="text" id="m-res-pct" placeholder="10%"></div>
+            <div class="form-group"><label class="form-label">Reserve Period (days)</label><input class="form-input" type="number" id="m-period" placeholder="180"></div>
+          </div>
+          <button class="btn btn-gold" onclick="saveMerch()">Save Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FI MODE PANELS
+    ══════════════════════════════════════════ -->
+
+    <!-- FI: Portfolio Dashboard -->
+    <div class="panel" id="panel-psp-overview">
+      <div class="alert" style="background:rgba(74,144,196,0.07);border-color:rgba(74,144,196,0.2);border-left-color:var(--blue);">
+        <div class="alert-icon">📊</div>
+        <div class="alert-body" style="color:var(--muted);"><strong style="color:var(--blue);">Financial Institution Mode</strong> — Portfolio view across all merchants under your management. Chargeback ratios above threshold are your liability as the acquiring/sponsoring entity. <strong style="color:var(--white);">3 merchants require immediate attention.</strong></div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);">
+        <div class="kpi"><div class="kpi-label">Total Merchants</div><div class="kpi-val" style="color:var(--gold)">5</div><div class="kpi-sub">Active MIDs under management</div></div>
+        <div class="kpi"><div class="kpi-label">Portfolio Volume</div><div class="kpi-val">£56,700</div><div class="kpi-sub">Gross across all merchants</div></div>
+        <div class="kpi"><div class="kpi-label">At-Risk Merchants</div><div class="kpi-val" style="color:var(--red)">3</div><div class="kpi-sub">CB above Visa threshold</div><div class="kpi-flag" style="background:var(--red-dim);color:var(--red);">🔴 Immediate action</div></div>
+        <div class="kpi"><div class="kpi-label">Reserves Held</div><div class="kpi-val" style="color:var(--amber)">£3,770</div><div class="kpi-sub">Locked across portfolio</div></div>
+        <div class="kpi"><div class="kpi-label">Discrepancies</div><div class="kpi-val" style="color:var(--red)">2</div><div class="kpi-sub">Unmatched settlements</div></div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">Portfolio <em>Risk Heat Map</em></div><div class="tag">CB Ratio vs Visa Thresholds — click cell</div></div>
+      <div class="heat-grid" id="psp-heat-grid"></div>
+      <div class="sec-hdr"><div class="sec-title">Merchant <em>Portfolio Cards</em></div><div class="tag">Click any card for action plan</div></div>
+      <div class="portfolio-grid" id="portfolio-cards"></div>
+      <div class="sec-hdr"><div class="sec-title">Merchants <em>Requiring Action</em></div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Merchant</th><th>MID</th><th>Issue</th><th>CB Ratio</th><th>Reserve</th><th>Recon</th><th>Your Action</th></tr></thead>
+        <tbody id="psp-action-body"></tbody>
+      </table></div>
+    </div>
+
+    <!-- FI: CB Monitor -->
+    <div class="panel" id="panel-psp-chargebacks">
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi"><div class="kpi-label">Portfolio CB Value</div><div class="kpi-val" style="color:var(--red)">£740</div></div>
+        <div class="kpi"><div class="kpi-label">Merchants in Breach</div><div class="kpi-val" style="color:var(--red)">3</div></div>
+        <div class="kpi"><div class="kpi-label">Portfolio Avg Ratio</div><div class="kpi-val" style="color:var(--amber)">1.31%</div></div>
+        <div class="kpi"><div class="kpi-label">Highest MID</div><div class="kpi-val" style="color:var(--red)">2.00%</div></div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">Chargeback <em>by Merchant</em></div><div class="tag">Click row for your action plan as FI</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Merchant</th><th>MID</th><th>Gross</th><th>CB Amount</th><th>CB Ratio</th><th>Visa Status</th><th>Your Action as FI</th></tr></thead>
+        <tbody id="fi-cb-body"></tbody>
+      </table></div>
+      <div class="three-col">
+        <div class="card"><div class="card-title">Your Liability as FI</div><div style="font-size:12px;color:var(--muted);line-height:1.8;">As the sponsoring institution, <strong style="color:var(--white)">you carry the card scheme liability</strong> for your merchants' CB ratios. If a merchant you sponsor exceeds Visa ECM (≥0.90%), Visa may fine <em>you</em> — not just the merchant.</div></div>
+        <div class="card"><div class="card-title">Visa Trigger Points</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+            <div style="padding:7px 10px;background:var(--green-dim);border-radius:8px;display:flex;justify-content:space-between;"><span>Safe</span><span class="mono" style="color:var(--green)">&lt;0.65%</span></div>
+            <div style="padding:7px 10px;background:var(--amber-dim);border-radius:8px;display:flex;justify-content:space-between;"><span>VAMP — notify merchant</span><span class="mono" style="color:var(--amber)">≥0.65%</span></div>
+            <div style="padding:7px 10px;background:var(--red-dim);border-radius:8px;display:flex;justify-content:space-between;"><span>ECM — enforce plan</span><span class="mono" style="color:var(--red)">≥0.90%</span></div>
+            <div style="padding:7px 10px;background:var(--red-dim);border-radius:8px;display:flex;justify-content:space-between;"><span>HCM — suspend MID</span><span class="mono" style="color:var(--red)">≥1.80%</span></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title">Escalation Steps</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted);">
+            <div>① Send written warning (VAMP)</div><div>② Issue formal notice — 30 day window (ECM)</div>
+            <div>③ Increase reserve % (ECM+)</div><div>④ Suspend MID (HCM)</div><div>⑤ MATCH list referral (persistent)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FI: Reserves -->
+    <div class="panel" id="panel-psp-reserves">
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi"><div class="kpi-label">Total Portfolio Reserves</div><div class="kpi-val" style="color:var(--amber)">£3,770</div></div>
+        <div class="kpi"><div class="kpi-label">Next Release</div><div class="kpi-val" style="font-size:18px;color:var(--blue)">2 May 2026</div></div>
+        <div class="kpi"><div class="kpi-label">Merchants with Reserves</div><div class="kpi-val">5</div></div>
+        <div class="kpi"><div class="kpi-label">Disputed Releases</div><div class="kpi-val" style="color:var(--green)">0</div></div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">Reserve <em>Release Schedule</em></div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Merchant</th><th>MID</th><th>Statement Date</th><th>Reserve Held</th><th>Reserve %</th><th>Period</th><th>Release Date</th><th>Status</th></tr></thead>
+        <tbody id="fi-reserve-body"></tbody>
+      </table></div>
+    </div>
+
+    <!-- FI: Merchant Portfolio -->
+    <div class="panel" id="panel-psp-merchants">
+      <div class="sec-hdr"><div class="sec-title">Merchant <em>Portfolio</em></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="go('psp-upload',null)">📤 Upload Portfolio</button>
+          <button class="btn btn-gold" onclick="go('add',null)">+ Add Merchant</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Merchant</th><th>MID</th><th>Type</th><th>Jurisdiction</th><th>Reserve %</th><th>Period</th><th>CB Ratio</th><th>CB Status</th><th>Account</th></tr></thead>
+        <tbody id="fi-merchants-body"></tbody>
+      </table></div>
+    </div>
+
+    <!-- FI: Portfolio Statements -->
+    <div class="panel" id="panel-psp-statements">
+      <div class="sec-hdr"><div class="sec-title">Portfolio <em>Statements</em></div><div class="tag">All Merchants</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Merchant</th><th>MID</th><th>Date</th><th>Gross</th><th>Fees</th><th>Refunds</th><th>CB</th><th>Reserve</th><th>Net Expected</th><th>Received</th><th>Diff</th><th>Status</th></tr></thead>
+        <tbody id="fi-statements-body"></tbody>
+      </table></div>
+    </div>
+
+    <!-- FI: Upload -->
+    <div class="panel" id="panel-psp-upload">
+      <div class="sec-hdr"><div class="sec-title">Upload <em>Merchant Data</em></div></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Upload Portfolio CSV</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:18px;">Upload a CSV file with your merchant portfolio. ReconIQ parses it and populates all dashboards automatically.<br><br><strong style="color:var(--white)">Required columns:</strong> MID, Merchant_Name, Business_Type, Jurisdiction, Reserve_Pct, Reserve_Days, Statement_Date, Gross_Amount, Fee_Amount, Refund_Amount, Chargeback_Amount, Reserve_Held, Bank_Received</div>
+          <div class="upload-zone" id="upload-zone" onclick="document.getElementById('csv-upload').click()" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='rgba(244,168,50,0.25)'" ondrop="handleDrop(event)">
+            <div style="font-size:32px;margin-bottom:10px;">📤</div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Drop CSV file here</div>
+            <div style="font-size:12px;color:var(--muted);">or click to browse</div>
+          </div>
+          <input type="file" id="csv-upload" accept=".csv" style="display:none;" onchange="handleFileUpload(this)">
+          <div id="upload-status" style="display:none;padding:12px;border-radius:10px;font-size:12px;margin-top:14px;"></div>
+          <button class="btn btn-ghost" onclick="downloadTemplate()" style="margin-top:14px;font-size:12px;">⬇ Download CSV Template</button>
+        </div>
+        <div class="card">
+          <div class="card-title">CSV Column Guide</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Exact column headers — row 1 of your CSV:</div>
+          <div class="col-list">
+            ${['MID','Merchant_Name','Business_Type','Jurisdiction','Reserve_Pct','Reserve_Days','Statement_Date','Gross_Amount','Fee_Amount','Refund_Amount','Chargeback_Amount','Reserve_Held','Bank_Received'].map((c,i)=>`<div class="col-item"><span class="col-num">${i+1}</span><span class="col-name">${c}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         COMPLIANCE MODE PANELS
+    ══════════════════════════════════════════ -->
+
+    <!-- Compliance: Risk Summary -->
+    <div class="panel" id="panel-compliance-overview">
+      <div class="alert" style="background:rgba(201,150,58,0.06);border-color:rgba(201,150,58,0.2);border-left-color:var(--gold);">
+        <div class="alert-icon">🔍</div>
+        <div class="alert-body" style="color:var(--muted);"><strong style="color:var(--gold);">Compliance Officer Mode</strong> — Read-only. All risk flags, threshold breaches and anomalies surfaced here for review, sign-off and escalation. No data entry required in this mode.</div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr);">
+        <div class="kpi"><div class="kpi-label">Total Volume</div><div class="kpi-val" id="co-gross">—</div></div>
+        <div class="kpi"><div class="kpi-label">Total Chargebacks</div><div class="kpi-val" style="color:var(--red)" id="co-cb-val">—</div></div>
+        <div class="kpi"><div class="kpi-label">Portfolio CB Rate</div><div class="kpi-val" style="color:var(--red)" id="co-cb-pct">—</div></div>
+        <div class="kpi"><div class="kpi-label">Reserves Held</div><div class="kpi-val" style="color:var(--amber)" id="co-res">—</div></div>
+        <div class="kpi"><div class="kpi-label">Discrepancies</div><div class="kpi-val" style="color:var(--red)" id="co-disc">—</div></div>
+        <div class="kpi"><div class="kpi-label">CB Breaches</div><div class="kpi-val" style="color:var(--red)" id="co-breaches">—</div></div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">Open <em>Risk Flags</em></div><div class="tag">Requires review</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Severity</th><th>MID</th><th>Issue</th><th>Recommended Action</th><th>Status</th></tr></thead>
+        <tbody id="co-risk-body"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Compliance: CB Audit Log -->
+    <div class="panel" id="panel-compliance-chargebacks">
+      <div class="alert" style="background:rgba(201,150,58,0.06);border-color:rgba(201,150,58,0.2);border-left-color:var(--gold);">
+        <div class="alert-icon">🔍</div>
+        <div class="alert-body">This is your <strong style="color:var(--gold);">Chargeback Audit Log</strong> — a read-only record for evidencing monitoring controls to a regulator or auditor.</div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">Chargeback <em>Breach History</em></div><div class="tag">Audit Trail</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date</th><th>MID</th><th>Merchant</th><th>CB Ratio</th><th>Threshold Breached</th><th>Severity</th><th>Evidence Statement</th></tr></thead>
+        <tbody id="co-cb-body"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Compliance: Reserve Audit -->
+    <div class="panel" id="panel-compliance-reserves">
+      <div class="alert" style="background:rgba(201,150,58,0.06);border-color:rgba(201,150,58,0.2);border-left-color:var(--gold);">
+        <div class="alert-icon">🔒</div>
+        <div class="alert-body">This is your <strong style="color:var(--gold);">Reserve Audit Trail</strong> — a complete record of every reserve tranche for regulatory inspection.</div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>MID</th><th>Merchant</th><th>Statement Date</th><th>Reserve Held</th><th>Reserve %</th><th>Period</th><th>Expected Release</th><th>Contractual Basis</th><th>Status</th></tr></thead>
+        <tbody id="co-reserve-body"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Compliance: Report -->
+    <div class="panel" id="panel-compliance-report">
+      <div class="sec-hdr"><div class="sec-title">Download <em>Compliance Report</em></div></div>
+      <div class="three-col">
+        <div class="card" style="cursor:pointer;" onclick="generateReport('daily')" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor=''">
+          <div style="font-size:28px;margin-bottom:10px;">📋</div>
+          <div class="card-title">Daily Settlement Report</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px;">All settlements from the past 24 hours, reconciliation status, discrepancies. For daily operational sign-off.</div>
+          <span class="badge b-ok">Generate CSV</span>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="generateReport('weekly')" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor=''">
+          <div style="font-size:28px;margin-bottom:10px;">📊</div>
+          <div class="card-title">Weekly Risk Summary</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px;">CB ratios, reserves, reconciliation rates and open flags. For weekly management review.</div>
+          <span class="badge b-ok">Generate CSV</span>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="generateReport('audit')" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor=''">
+          <div style="font-size:28px;margin-bottom:10px;">📁</div>
+          <div class="card-title">Full Audit Export</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px;">Complete export of all statements, reconciliations, CB logs and reserve records for FCA/MFSA submission.</div>
+          <span class="badge b-mon">Generate CSV</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Compliance Officer — Operating Instructions</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px;">
+          <div class="action-item"><div class="action-num">1</div><div class="action-text"><strong>Daily (5 min):</strong> Open Risk Summary. Check for new red flags. Any Critical flag requires same-day escalation to senior management. Screenshot the flag with timestamp.</div></div>
+          <div class="action-item"><div class="action-num">2</div><div class="action-text"><strong>Weekly:</strong> Open CB Audit Log. Confirm remediation is in progress for every open flag. Download Weekly Risk Summary and file in compliance records. Any flag open 5+ business days without response must be escalated.</div></div>
+          <div class="action-item"><div class="action-num">3</div><div class="action-text"><strong>Monthly:</strong> Open Reserve Audit Trail. Verify every tranche has a contractual basis. Confirm upcoming releases are logged. Sign off monthly reserve position and save to regulatory records.</div></div>
+          <div class="action-item"><div class="action-num">4</div><div class="action-text"><strong>On demand / Quarterly:</strong> Generate Full Audit Export. This is your first response document if a regulator requests evidence of settlement monitoring controls.</div></div>
+          <div class="action-item" style="border-color:rgba(224,82,82,0.2);"><div class="action-num" style="color:var(--red);">!</div><div class="action-text"><strong style="color:var(--red);">Red Alert Protocol:</strong> Screenshot flag → notify MLRO within 2 hours → contact merchant or acquirer same day → document every action with timestamp → if discrepancy exceeds £10,000 and unresolved after 48h, begin SAR assessment procedure.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SHARED: Help ══ -->
+    <div class="panel" id="panel-help">
+      <div class="two-col">
+        <div>
+          <div class="help-section"><h3>What is ReconIQ?</h3><p>ReconIQ is a settlement reconciliation and risk monitoring tool for high-risk merchants, PSPs, EMIs, and acquiring banks. It compares acquirer statements against bank deposits, monitors chargeback ratios against card scheme thresholds, and tracks rolling reserve release dates.</p></div>
+          <div class="help-section"><h3>Glossary</h3>
+            <p><strong style="color:var(--white)">MID</strong> — Merchant ID. The unique identifier your acquirer assigns to your processing account.<br>
+            <strong style="color:var(--white)">Gross Amount</strong> — Total card transaction value before any deductions.<br>
+            <strong style="color:var(--white)">Net Expected</strong> — What you should receive after fees, refunds, chargebacks and reserve.<br>
+            <strong style="color:var(--white)">Reconciliation</strong> — Comparing Net Expected against what actually arrived in your bank.<br>
+            <strong style="color:var(--white)">Rolling Reserve</strong> — A percentage of settlements held back by your acquirer as a chargeback buffer.<br>
+            <strong style="color:var(--white)">Chargeback Ratio</strong> — Chargebacks ÷ Gross Volume. The key metric card schemes monitor.<br>
+            <strong style="color:var(--white)">MATCH List</strong> — A blacklist shared across acquirers. Being placed on it makes processing near-impossible.<br>
+            <strong style="color:var(--white)">Acquirer</strong> — The bank or institution that processes card payments on your behalf.</p>
+          </div>
+        </div>
+        <div>
+          <div class="help-section"><h3>Chargeback Threshold Reference</h3>
+            <table class="threshold-table">
+              <thead><tr><th>Programme</th><th>Scheme</th><th>Trigger</th><th>Consequence</th></tr></thead>
+              <tbody>
+                <tr><td>VAMP</td><td>Visa</td><td>≥0.65%</td><td>Monitoring entry, formal notice</td></tr>
+                <tr><td>ECM</td><td>Visa</td><td>≥0.90%</td><td>Monthly fines begin</td></tr>
+                <tr><td>HCM</td><td>Visa</td><td>≥1.80%</td><td>Suspension risk, acquirer liability</td></tr>
+                <tr><td>MCM</td><td>Mastercard</td><td>≥1.00%</td><td>Monitoring programme</td></tr>
+                <tr><td>Excessive CB</td><td>Mastercard</td><td>≥1.50%</td><td>Fines + possible MATCH listing</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end panels -->
+</div><!-- end main -->
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const merchants = [
+  {mid:'MID001',name:'Alpha Payments Ltd',type:'Crypto Exchange',jur:'United Kingdom',res_pct:'10%',res_days:180,status:'Active'},
+  {mid:'MID002',name:'Beta Commerce Ltd',type:'Online Gaming',jur:'Malta',res_pct:'8%',res_days:180,status:'Active'},
+  {mid:'MID003',name:'Gamma FX Ltd',type:'FX / Remittance',jur:'Germany',res_pct:'5%',res_days:90,status:'Active'},
+  {mid:'MID004',name:'Delta Subs Inc',type:'Subscription SaaS',jur:'United States',res_pct:'12%',res_days:180,status:'Active'},
+  {mid:'MID005',name:'Epsilon Travel Co',type:'Travel & Ticketing',jur:'Ireland',res_pct:'7%',res_days:120,status:'Active'},
+];
+const statements = [
+  {mid:'MID001',date:'2026-01-15',gross:12000,fee:720,refund:240,cb:240,reserve:1200,received:9600,period:180,net:9600,diff:0,cbr:0.020,rel:'2026-07-15',cbStatus:'critical',reconStatus:'matched'},
+  {mid:'MID002',date:'2026-01-20',gross:15000,fee:900,refund:300,cb:300,reserve:1200,received:12300,period:180,net:12300,diff:0,cbr:0.020,rel:'2026-07-20',cbStatus:'critical',reconStatus:'matched'},
+  {mid:'MID003',date:'2026-01-25',gross:8000,fee:480,refund:160,cb:54,reserve:400,received:6756,period:90,net:6906,diff:-150,cbr:0.00675,rel:'2026-04-25',cbStatus:'monitor',reconStatus:'disc'},
+  {mid:'MID004',date:'2026-02-01',gross:9500,fee:570,refund:190,cb:119,reserve:1140,received:7131,period:180,net:7481,diff:-350,cbr:0.01253,rel:'2026-08-01',cbStatus:'high',reconStatus:'disc'},
+  {mid:'MID005',date:'2026-02-05',gross:12200,fee:732,refund:244,cb:166,reserve:854,received:10204,period:120,net:10204,diff:0,cbr:0.01361,rel:'2026-06-05',cbStatus:'high',reconStatus:'matched'},
+];
+const mMap = {};
+merchants.forEach(m => mMap[m.mid] = m);
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+const f  = v => '£' + (v||0).toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fp = v => (((v||0)*100).toFixed(2)) + '%';
+function reconBadge(s){
+  if(s==='matched') return '<span class="badge b-matched">✅ Matched</span>';
+  if(s==='disc')    return '<span class="badge b-disc">❌ Discrepancy</span>';
+  return '<span class="badge b-pend">⏳ Pending</span>';
+}
+function cbBadge(s){
+  const map={ok:'<span class="badge b-ok">🟢 OK</span>',monitor:'<span class="badge b-mon">🟡 Monitor</span>',high:'<span class="badge b-high">🔴 High Risk</span>',critical:'<span class="badge b-high">🔴 Critical</span>'};
+  return map[s]||'—';
+}
+function notify(msg,type){
+  const n=document.getElementById('notif');
+  n.textContent=(type==='ok'?'✓  ':type==='warn'?'⚠️  ':'')+msg;
+  n.style.borderLeftColor=type==='ok'?'var(--green)':'var(--amber)';
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+const titles = {
+  overview:'My Settlement <em>Overview</em>',
+  statements:'My Acquirer <em>Statements</em>',
+  chargebacks:'My Chargeback <em>Monitor</em>',
+  reserves:'My Reserve <em>Tracker</em>',
+  add:'Add <em>Entry</em>',
+  'psp-overview':'Portfolio <em>Dashboard</em>',
+  'psp-chargebacks':'Portfolio <em>Chargebacks</em>',
+  'psp-reserves':'Portfolio <em>Reserves</em>',
+  'psp-merchants':'Merchant <em>Portfolio</em>',
+  'psp-statements':'Portfolio <em>Statements</em>',
+  'psp-upload':'Upload <em>Merchant Data</em>',
+  'compliance-overview':'Risk & Compliance <em>Summary</em>',
+  'compliance-chargebacks':'Chargeback <em>Audit Log</em>',
+  'compliance-reserves':'Reserve <em>Audit Trail</em>',
+  'compliance-report':'Download <em>Report</em>',
+  help:'Help <em>& Glossary</em>',
+};
+
+function go(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (!panel) return;
+  panel.classList.add('active');
+  if (el) {
+    el.classList.add('active');
+  } else {
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+name+"'")) n.classList.add('active');
+    });
+  }
+  const t = document.getElementById('pg-title');
+  if (t) t.innerHTML = titles[name] || name;
+  const renders = {
+    'overview': renderMerchantOverview,
+    'statements': renderMerchantStatements,
+    'reserves': renderMerchantReserves,
+    'chargebacks': renderMerchantCB,
+    'psp-overview': renderPSPOverview,
+    'psp-chargebacks': renderFICB,
+    'psp-reserves': renderFIReserves,
+    'psp-merchants': renderFIMerchants,
+    'psp-statements': renderFIStatements,
+    'compliance-overview': renderComplianceOverview,
+    'compliance-chargebacks': renderComplianceCBLog,
+    'compliance-reserves': renderComplianceReserves,
+  };
+  if (renders[name]) renders[name]();
+}
+
+// ═══════════════════════════════════════════════
+// MODE SYSTEM
+// ═══════════════════════════════════════════════
+let currentMode = 'merchant';
+let pendingMode = null;
+
+const MODES = {
+  merchant:   {label:'Merchant',          dot:'#4CAF7D', home:'overview'},
+  fi:         {label:'Financial Inst.',   dot:'#4A90C4', home:'psp-overview'},
+  compliance: {label:'Compliance Officer',dot:'#D4863A', home:'compliance-overview'},
+};
+
+window.selectMode = function(mode, card) {
+  pendingMode = mode;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  const btn = document.getElementById('mode-confirm-btn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  btn.textContent = 'Continue as ' + MODES[mode].label + ' →';
+};
+
+window.confirmMode = function() {
+  if (!pendingMode) return;
+  applyMode(pendingMode);
+  const ov = document.getElementById('mode-overlay');
+  ov.style.transition = 'opacity 0.3s';
+  ov.style.opacity = '0';
+  setTimeout(() => { ov.style.display = 'none'; ov.style.opacity = '1'; }, 300);
+};
+
+window.showModeSwitch = function() {
+  pendingMode = null;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  const btn = document.getElementById('mode-confirm-btn');
+  btn.disabled = true; btn.style.opacity = '0.4';
+  btn.textContent = 'Select a mode to continue →';
+  const ov = document.getElementById('mode-overlay');
+  ov.style.display = 'flex'; ov.style.opacity = '0';
+  requestAnimationFrame(() => { ov.style.transition = 'opacity 0.3s'; ov.style.opacity = '1'; });
+};
+
+function applyMode(mode) {
+  currentMode = mode;
+  const cfg = MODES[mode];
+  const dot = document.getElementById('mode-dot');
+  const lbl = document.getElementById('mode-badge-label');
+  const btn = document.getElementById('mode-badge-btn');
+  if (dot) dot.style.background = cfg.dot;
+  if (lbl) lbl.textContent = cfg.label;
+  if (btn) { btn.style.borderColor = cfg.dot + '40'; btn.style.color = cfg.dot; }
+  buildNav(mode);
+  go(cfg.home, null);
+  notify('Mode: ' + cfg.label, 'ok');
+}
+
+function buildNav(mode) {
+  const nav = document.getElementById('nav-items');
+  if (!nav) return;
+  if (mode === 'merchant') {
+    nav.innerHTML = `
+      <div class="nav-section">My Dashboard</div>
+      <div class="nav-item active" onclick="go('overview',this)"><span class="icon">📊</span>My Overview</div>
+      <div class="nav-item" onclick="go('statements',this)"><span class="icon">📋</span>My Statements</div>
+      <div class="nav-item" onclick="go('chargebacks',this)"><span class="icon">🔥</span>My Chargebacks</div>
+      <div class="nav-item" onclick="go('reserves',this)"><span class="icon">🔒</span>My Reserves</div>
+      <div class="nav-section">Manage</div>
+      <div class="nav-item" onclick="go('add',this)"><span class="icon">➕</span>Add Entry</div>
+      <div class="nav-section">Support</div>
+      <div class="nav-item" onclick="go('help',this)"><span class="icon">📖</span>Help & Glossary</div>`;
+  } else if (mode === 'fi') {
+    nav.innerHTML = `
+      <div class="nav-section">Portfolio</div>
+      <div class="nav-item active" onclick="go('psp-overview',this)"><span class="icon">📊</span>Portfolio Dashboard</div>
+      <div class="nav-item" onclick="go('psp-chargebacks',this)"><span class="icon">🔥</span>CB Monitor</div>
+      <div class="nav-item" onclick="go('psp-reserves',this)"><span class="icon">🔒</span>Reserve Tracker</div>
+      <div class="nav-section">Manage</div>
+      <div class="nav-item" onclick="go('psp-merchants',this)"><span class="icon">🏪</span>Merchant Portfolio</div>
+      <div class="nav-item" onclick="go('psp-statements',this)"><span class="icon">📋</span>Portfolio Statements</div>
+      <div class="nav-item" onclick="go('psp-upload',this)"><span class="icon">📤</span>Upload Data</div>
+      <div class="nav-item" onclick="go('add',this)"><span class="icon">➕</span>Add Entry</div>
+      <div class="nav-section">Support</div>
+      <div class="nav-item" onclick="go('help',this)"><span class="icon">📖</span>Help & Glossary</div>`;
+  } else {
+    nav.innerHTML = `
+      <div class="nav-section">Risk Overview</div>
+      <div class="nav-item active" onclick="go('compliance-overview',this)"><span class="icon">🔍</span>Risk Summary</div>
+      <div class="nav-item" onclick="go('compliance-chargebacks',this)"><span class="icon">🔥</span>CB Audit Log</div>
+      <div class="nav-item" onclick="go('compliance-reserves',this)"><span class="icon">🔒</span>Reserve Audit Trail</div>
+      <div class="nav-section">Reporting</div>
+      <div class="nav-item" onclick="go('compliance-report',this)"><span class="icon">📄</span>Download Report</div>
+      <div class="nav-section">Support</div>
+      <div class="nav-item" onclick="go('help',this)"><span class="icon">📖</span>Help & Glossary</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// MERCHANT RENDERS — focused on ONE merchant's own data
+// ═══════════════════════════════════════════════
+function renderMerchantOverview() {
+  // Use MID001 as "my" merchant for demo
+  const myMid = 'MID001';
+  const ss = statements.filter(s => s.mid === myMid);
+  const gross = ss.reduce((a,s) => a+s.gross, 0);
+  const cb    = ss.reduce((a,s) => a+s.cb, 0);
+  const res   = ss.reduce((a,s) => a+s.reserve, 0);
+  const disc  = ss.filter(s => s.diff !== 0).length;
+  const cbr   = gross > 0 ? cb/gross : 0;
+
+  const el = (id) => document.getElementById(id);
+  if (el('m-gross')) el('m-gross').textContent = f(gross);
+  if (el('m-cbr'))   { el('m-cbr').textContent = fp(cbr); el('m-cbr').style.color = cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)'; }
+  if (el('m-res'))   el('m-res').textContent = f(res);
+  if (el('m-disc'))  { el('m-disc').textContent = disc; el('m-disc').style.color = disc>0?'var(--red)':'var(--green)'; }
+
+  // Insight cards — merchant-specific language
+  const ins = document.getElementById('m-insights');
+  if (ins) {
+    const cbrStatus = cbr>=0.015?'crit':cbr>=0.009?'crit':cbr>=0.0065?'warn':'ok';
+    const discStatus = disc>0?'warn':'ok';
+    ins.innerHTML = `
+      <div class="insight-card ${cbrStatus}" onclick="go('chargebacks',null)">
+        <div class="insight-label">My CB Ratio</div>
+        <div class="insight-val" style="color:${cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)'}">${fp(cbr)}</div>
+        <div class="insight-desc">${cbr>=0.009?'You are in a Visa monitoring programme. This requires immediate action — your account is at risk of suspension.':cbr>=0.0065?'You have entered Visa VAMP monitoring. You need a remediation plan in the next 30 days.':'Your ratio is within safe limits. Monitor monthly and keep it here.'}</div>
+        <div class="insight-action" style="color:${cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)'}">Click for what to do →</div>
+      </div>
+      <div class="insight-card ${discStatus}" onclick="go('statements',null)">
+        <div class="insight-label">Settlement Discrepancies</div>
+        <div class="insight-val" style="color:${disc>0?'var(--red)':'var(--green)'}">${disc > 0 ? disc + ' found' : '✓ None'}</div>
+        <div class="insight-desc">${disc>0?'Your acquirer sent less than your statement says they owed you. The difference needs to be investigated and recovered.':'All settlements match your acquirer statements. No shortfalls detected this period.'}</div>
+        <div class="insight-action" style="color:${disc>0?'var(--red)':'var(--muted)'}">Click to view details →</div>
+      </div>
+      <div class="insight-card ${res>0?'warn':'ok'}" onclick="go('reserves',null)">
+        <div class="insight-label">Reserve Held by Acquirer</div>
+        <div class="insight-val" style="color:var(--amber)">${f(res)}</div>
+        <div class="insight-desc">Your acquirer is holding ${f(res)} of your money as a chargeback buffer. Track this screen to know exactly when each tranche is due back.</div>
+        <div class="insight-action" style="color:var(--amber)">Click for release schedule →</div>
+      </div>`;
+  }
+
+  // "What to do next" actions
+  const act = document.getElementById('m-actions');
+  if (act) {
+    const items = [];
+    if (cbr >= 0.009)  items.push({n:'!',c:'var(--red)',  t:'<strong>Urgent — contact your acquirer now.</strong> Your chargeback ratio is in ECM/HCM territory. Email your account manager today flagging you are aware and have a remediation plan. Do not wait for them to contact you.'});
+    if (cbr >= 0.0065) items.push({n:'1',c:'var(--gold)', t:'<strong>Review your chargeback reason codes</strong> with your acquirer. Find out which transaction types are generating disputes and address the root cause this week.'});
+    if (disc > 0)      items.push({n:'2',c:'var(--amber)',t:'<strong>Chase your settlement discrepancy.</strong> Email your acquirer settlements team, reference your statement date and the shortfall amount. Ask for a written breakdown of how they calculated your net payment.'});
+    if (res > 0)       items.push({n:'3',c:'var(--muted)',t:'<strong>Track your reserve release dates.</strong> Open My Reserves to see exactly when each tranche is due. Set a calendar reminder 5 days before to confirm with your acquirer.'});
+    if (items.length === 0) items.push({n:'✓',c:'var(--green)',t:'<strong>No immediate actions required.</strong> Your ratio is healthy, settlements are matching, and reserves are being tracked. Review again after your next settlement cycle.'});
+    act.innerHTML = items.map(i=>`<div class="action-item" style="border-left:3px solid ${i.c};"><div class="action-num" style="color:${i.c}">${i.n}</div><div class="action-text">${i.t}</div></div>`).join('');
+  }
+
+  // Recent settlements table
+  const body = document.getElementById('m-stmt-body');
+  if (body) {
+    body.innerHTML = ss.map(s => `
+      <tr style="cursor:pointer;" onclick="showDrawer('${s.mid}','cb')">
+        <td class="mono" style="font-size:11px;">${s.date}</td>
+        <td class="mono">${f(s.gross)}</td>
+        <td class="mono" style="color:var(--red);">${f(s.fee+s.refund+s.cb+s.reserve)}</td>
+        <td class="mono" style="color:var(--gold);font-weight:600;">${f(s.net)}</td>
+        <td class="mono">${f(s.received)}</td>
+        <td class="mono" style="color:${s.diff===0?'var(--muted)':s.diff>0?'var(--green)':'var(--red)'};">${s.diff===0?'—':f(s.diff)}</td>
+        <td>${reconBadge(s.reconStatus)}</td>
+      </tr>`).join('');
+  }
+}
+
+function renderMerchantStatements() {
+  const body = document.getElementById('m-full-stmts');
+  if (!body) return;
+  body.innerHTML = statements.map(s => `
+    <tr style="cursor:pointer;" onclick="showDrawer('${s.mid}','cb')">
+      <td class="mono" style="font-size:11px;">${s.date}</td>
+      <td class="mono">${f(s.gross)}</td>
+      <td class="mono" style="color:var(--red);font-size:12px;">${f(s.fee)}</td>
+      <td class="mono" style="color:var(--red);font-size:12px;">${f(s.refund)}</td>
+      <td class="mono" style="color:var(--red);font-size:12px;">${f(s.cb)}</td>
+      <td class="mono" style="color:var(--amber);">${f(s.reserve)}</td>
+      <td class="mono" style="color:var(--gold);font-weight:600;">${f(s.net)}</td>
+      <td class="mono">${f(s.received)}</td>
+      <td class="mono" style="color:${s.diff===0?'var(--muted)':s.diff>0?'var(--green)':'var(--red)'};">${s.diff===0?'—':f(s.diff)}</td>
+      <td>${reconBadge(s.reconStatus)}</td>
+    </tr>`).join('');
+}
+
+function renderMerchantReserves() {
+  const today = new Date();
+  const totalRes = statements.reduce((a,s)=>a+s.reserve,0);
+  const releases = statements.map(s => ({...s, daysLeft: Math.ceil((new Date(s.rel)-today)/(86400000))})).sort((a,b)=>a.daysLeft-b.daysLeft);
+  const el = id => document.getElementById(id);
+  if (el('mr-total')) el('mr-total').textContent = f(totalRes);
+  if (el('mr-count')) el('mr-count').textContent = statements.length;
+  if (el('mr-next'))  el('mr-next').textContent  = releases[0]?.rel || '—';
+  const body = document.getElementById('m-reserves-body');
+  if (!body) return;
+  body.innerHTML = releases.map(s => {
+    const d = s.daysLeft;
+    const sc = d<0?'var(--red)':d<=30?'var(--amber)':'var(--green)';
+    const st = d<0?'⚠️ Overdue':d<=30?'⏰ Due soon':'⏳ Pending';
+    const bc = d<0?'b-disc':d<=30?'b-warn':'b-pend';
+    return `<tr style="cursor:pointer;" onclick="showDrawer('${s.mid}','reserve')">
+      <td class="mono" style="font-size:11px;">${s.date}</td>
+      <td class="mono" style="color:var(--amber);font-weight:600;">${f(s.reserve)}</td>
+      <td class="mono">${mMap[s.mid]?.res_pct||'—'}</td>
+      <td class="mono">${s.period}d</td>
+      <td class="mono">${s.rel}</td>
+      <td class="mono" style="color:${sc};font-weight:${d<=30?'600':'400'};">${d<0?'Overdue':d+' days'}</td>
+      <td><span class="badge ${bc}">${st}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMerchantCB() {
+  const mids = [...new Set(statements.map(s=>s.mid))];
+  const totalG = statements.reduce((a,s)=>a+s.gross,0);
+  const totalC = statements.reduce((a,s)=>a+s.cb,0);
+  const cbr = totalG>0?totalC/totalG:0;
+  const el = id => document.getElementById(id);
+  if (el('mcb-ratio'))  { el('mcb-ratio').textContent=fp(cbr); el('mcb-ratio').style.color=cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)'; }
+  if (el('mcb-val'))    el('mcb-val').textContent = f(totalC);
+  if (el('mcb-status')) {
+    const st = cbr>=0.015?'🔴 HCM':cbr>=0.009?'🔴 ECM':cbr>=0.0065?'🟡 VAMP':'🟢 Safe';
+    el('mcb-status').textContent = st;
+    el('mcb-status').style.color = cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)';
+    if (el('mcb-status-sub')) el('mcb-status-sub').textContent = cbr>=0.009?'You are in a Visa monitoring programme':cbr>=0.0065?'You have entered VAMP monitoring':'Your ratio is within safe limits';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// FI RENDERS
+// ═══════════════════════════════════════════════
+function renderPSPOverview() {
+  const mids = [...new Set(statements.map(s=>s.mid))];
+  const heatEl = document.getElementById('psp-heat-grid');
+  if (heatEl) {
+    heatEl.innerHTML = mids.map(mid => {
+      const ss=statements.filter(s=>s.mid===mid);
+      const g=ss.reduce((a,s)=>a+s.gross,0), c=ss.reduce((a,s)=>a+s.cb,0), r=c/g;
+      const bg=r>=0.015?'rgba(224,82,82,0.14)':r>=0.009?'rgba(224,82,82,0.09)':r>=0.0065?'rgba(212,134,58,0.1)':'rgba(76,175,125,0.08)';
+      const tc=r>=0.009?'var(--red)':r>=0.0065?'var(--amber)':'var(--green)';
+      const bc=r>=0.009?'rgba(224,82,82,0.3)':r>=0.0065?'rgba(212,134,58,0.25)':'rgba(76,175,125,0.2)';
+      return `<div class="heat-cell" style="background:${bg};border-color:${bc};" onclick="showDrawer('${mid}','cb')">
+        <div class="heat-mid" style="color:var(--blue)">${mid}</div>
+        <div class="heat-val" style="color:${tc}">${fp(r)}</div>
+        <div class="heat-lbl">CB Ratio</div>
+      </div>`;
+    }).join('');
+  }
+  const pcEl = document.getElementById('portfolio-cards');
+  if (pcEl) {
+    pcEl.innerHTML = merchants.map(m => {
+      const ss=statements.filter(s=>s.mid===m.mid);
+      const gross=ss.reduce((a,s)=>a+s.gross,0), cb=ss.reduce((a,s)=>a+s.cb,0), res=ss.reduce((a,s)=>a+s.reserve,0);
+      const cbr=gross>0?cb/gross:0, disc=ss.filter(s=>s.diff!==0).length;
+      const sc=cbr>=0.009?'b-high':cbr>=0.0065?'b-mon':'b-ok';
+      const st=cbr>=0.009?'🔴 High Risk':cbr>=0.0065?'🟡 Monitor':'🟢 OK';
+      const tc=cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)';
+      const bt=cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)';
+      return `<div class="portfolio-card" onclick="showDrawer('${m.mid}','cb')" style="border-top:3px solid ${bt};">
+        <div class="pc-header">
+          <div style="min-width:0;flex:1;"><div class="pc-name">${m.name}</div><div class="pc-type">${m.mid} · ${m.type}</div></div>
+          <span class="badge ${sc}" style="flex-shrink:0;">${st}</span>
+        </div>
+        <div class="pc-stats">
+          <div class="pc-stat-box"><div class="pc-stat-lbl">Gross Vol</div><div class="pc-stat-val">${f(gross)}</div></div>
+          <div class="pc-stat-box"><div class="pc-stat-lbl">CB Ratio</div><div class="pc-stat-val" style="color:${tc}">${fp(cbr)}</div></div>
+          <div class="pc-stat-box"><div class="pc-stat-lbl">Reserve</div><div class="pc-stat-val" style="color:var(--amber)">${f(res)}</div></div>
+          <div class="pc-stat-box"><div class="pc-stat-lbl">Discrepancies</div><div class="pc-stat-val" style="color:${disc>0?'var(--red)':'var(--green)'}">${disc>0?disc+' ⚠':'✓ None'}</div></div>
+        </div>
+        <div class="pc-footer"><div class="pc-footer-lbl">${m.res_pct} reserve · ${m.res_days}d hold · ${m.jur}</div><span class="badge b-active">${m.status}</span></div>
+      </div>`;
+    }).join('');
+  }
+  const actionEl = document.getElementById('psp-action-body');
+  if (actionEl) {
+    const rows = [];
+    mids.forEach(mid => {
+      const ss=statements.filter(s=>s.mid===mid);
+      const g=ss.reduce((a,s)=>a+s.gross,0), c=ss.reduce((a,s)=>a+s.cb,0), r=g>0?c/g:0;
+      const res=ss.reduce((a,s)=>a+s.reserve,0), disc=ss.filter(s=>s.diff!==0).length;
+      if (r<0.0065 && disc===0) return;
+      const issues=[], action = r>=0.009?'🔴 Issue formal notice — enforce remediation':r>=0.0065?'🟡 Send written warning — request plan':'';
+      if (r>=0.0065) issues.push('CB Threshold');
+      if (disc>0) issues.push('Settlement Gap');
+      rows.push(`<tr style="cursor:pointer;" onclick="showDrawer('${mid}','cb')">
+        <td style="font-weight:500;">${mMap[mid]?.name||mid}</td>
+        <td><span class="mid">${mid}</span></td>
+        <td style="font-size:12px;">${issues.join(' + ')}</td>
+        <td class="mono" style="color:${r>=0.009?'var(--red)':'var(--amber)'};">${fp(r)}</td>
+        <td class="mono" style="color:var(--amber);">${f(res)}</td>
+        <td>${disc>0?'<span class="badge b-disc">❌ Discrepancy</span>':'<span class="badge b-matched">✅ Matched</span>'}</td>
+        <td style="font-size:12px;font-weight:500;">${action}</td>
+      </tr>`);
+    });
+    actionEl.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">Portfolio healthy — no merchants require action ✓</td></tr>';
+  }
+}
+
+function renderFICB() {
+  const el = document.getElementById('fi-cb-body');
+  if (!el) return;
+  const mids = [...new Set(statements.map(s=>s.mid))];
+  el.innerHTML = mids.map(mid => {
+    const ss=statements.filter(s=>s.mid===mid);
+    const g=ss.reduce((a,s)=>a+s.gross,0), c=ss.reduce((a,s)=>a+s.cb,0), r=g>0?c/g:0;
+    const sc=r>=0.009?'b-high':r>=0.0065?'b-mon':'b-ok';
+    const act=r>=0.015?'<span style="color:var(--red);font-weight:600;">⛔ Suspend MID immediately</span>':r>=0.009?'<span style="color:var(--red);">🚨 Issue formal notice — 30d window</span>':r>=0.0065?'<span style="color:var(--amber);">⚠️ Send written warning</span>':'<span style="color:var(--green);">✓ No action</span>';
+    return `<tr style="cursor:pointer;" onclick="showDrawer('${mid}','cb')">
+      <td style="font-weight:500;">${mMap[mid]?.name||mid}</td>
+      <td><span class="mid">${mid}</span></td>
+      <td class="mono">${f(g)}</td>
+      <td class="mono" style="color:var(--red);">${f(c)}</td>
+      <td class="mono" style="font-weight:700;color:${r>=0.009?'var(--red)':r>=0.0065?'var(--amber)':'var(--green)'};">${fp(r)}</td>
+      <td>${cbBadge(r>=0.015?'critical':r>=0.009?'high':r>=0.0065?'monitor':'ok')}</td>
+      <td style="font-size:12px;">${act}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFIReserves() {
+  const el = document.getElementById('fi-reserve-body');
+  if (!el) return;
+  const today = new Date();
+  el.innerHTML = statements.map(s => {
+    const d = Math.ceil((new Date(s.rel)-today)/86400000);
+    const sc = d<0?'b-disc':d<=14?'b-warn':'b-pend';
+    const st = d<0?'⚠️ Overdue':d<=14?'⏰ Due soon':'⏳ Pending';
+    return `<tr>
+      <td style="font-weight:500;">${mMap[s.mid]?.name||s.mid}</td>
+      <td><span class="mid">${s.mid}</span></td>
+      <td class="mono" style="font-size:11px;">${s.date}</td>
+      <td class="mono" style="color:var(--amber);font-weight:600;">${f(s.reserve)}</td>
+      <td class="mono">${mMap[s.mid]?.res_pct||'—'}</td>
+      <td class="mono">${s.period}d</td>
+      <td class="mono">${s.rel}</td>
+      <td><span class="badge ${sc}">${st}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFIMerchants() {
+  const el = document.getElementById('fi-merchants-body');
+  if (!el) return;
+  el.innerHTML = merchants.map(m => {
+    const ss=statements.filter(s=>s.mid===m.mid);
+    const g=ss.reduce((a,s)=>a+s.gross,0), c=ss.reduce((a,s)=>a+s.cb,0), r=g>0?c/g:0;
+    const sc=r>=0.009?'b-high':r>=0.0065?'b-mon':'b-ok';
+    return `<tr style="cursor:pointer;" onclick="showDrawer('${m.mid}','cb')">
+      <td style="font-weight:500;">${m.name}</td>
+      <td><span class="mid">${m.mid}</span></td>
+      <td style="font-size:12px;color:var(--muted);">${m.type}</td>
+      <td style="font-size:12px;color:var(--muted);">${m.jur}</td>
+      <td class="mono" style="color:var(--amber);">${m.res_pct}</td>
+      <td class="mono">${m.res_days}d</td>
+      <td class="mono" style="color:${r>=0.009?'var(--red)':r>=0.0065?'var(--amber)':'var(--green)'};">${fp(r)}</td>
+      <td>${cbBadge(r>=0.015?'critical':r>=0.009?'high':r>=0.0065?'monitor':'ok')}</td>
+      <td><span class="badge b-active">${m.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFIStatements() {
+  const el = document.getElementById('fi-statements-body');
+  if (!el) return;
+  el.innerHTML = statements.map(s=>`
+    <tr style="cursor:pointer;" onclick="showDrawer('${s.mid}','cb')">
+      <td style="font-size:12px;">${mMap[s.mid]?.name||s.mid}</td>
+      <td><span class="mid">${s.mid}</span></td>
+      <td class="mono" style="font-size:11px;">${s.date}</td>
+      <td class="mono">${f(s.gross)}</td>
+      <td class="mono" style="color:var(--red);font-size:12px;">${f(s.fee)}</td>
+      <td class="mono" style="color:var(--red);font-size:12px;">${f(s.refund)}</td>
+      <td class="mono" style="color:var(--red);font-size:12px;">${f(s.cb)}</td>
+      <td class="mono" style="color:var(--amber);">${f(s.reserve)}</td>
+      <td class="mono" style="color:var(--gold);font-weight:600;">${f(s.net)}</td>
+      <td class="mono">${f(s.received)}</td>
+      <td class="mono" style="color:${s.diff===0?'var(--muted)':s.diff>0?'var(--green)':'var(--red)'};">${s.diff===0?'—':f(s.diff)}</td>
+      <td>${reconBadge(s.reconStatus)}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// COMPLIANCE RENDERS
+// ═══════════════════════════════════════════════
+function renderComplianceOverview() {
+  const mids=[...new Set(statements.map(s=>s.mid))];
+  const tG=statements.reduce((a,s)=>a+s.gross,0), tC=statements.reduce((a,s)=>a+s.cb,0);
+  const tR=statements.reduce((a,s)=>a+s.reserve,0), disc=statements.filter(s=>s.diff!==0);
+  const breaches=mids.filter(mid=>{const ss=statements.filter(s=>s.mid===mid);const g=ss.reduce((a,s)=>a+s.gross,0),c=ss.reduce((a,s)=>a+s.cb,0);return g>0&&c/g>=0.0065;});
+  const el=id=>document.getElementById(id);
+  if(el('co-gross'))   el('co-gross').textContent=f(tG);
+  if(el('co-cb-val'))  el('co-cb-val').textContent=f(tC);
+  if(el('co-cb-pct'))  el('co-cb-pct').textContent=fp(tC/tG);
+  if(el('co-res'))     el('co-res').textContent=f(tR);
+  if(el('co-disc'))    el('co-disc').textContent=disc.length;
+  if(el('co-breaches'))el('co-breaches').textContent=breaches.length;
+  const body=document.getElementById('co-risk-body');
+  if (!body) return;
+  const flags=[];
+  mids.forEach(mid=>{
+    const ss=statements.filter(s=>s.mid===mid), g=ss.reduce((a,s)=>a+s.gross,0), c=ss.reduce((a,s)=>a+s.cb,0), r=g>0?c/g:0;
+    if(r>=0.0065){
+      const sev=r>=0.015?'Critical':r>=0.009?'High':'Medium';
+      const sc=r>=0.009?'b-disc':'b-warn';
+      flags.push(`<tr><td><span class="badge ${sc}">${sev}</span></td><td><span class="mid">${mid}</span></td><td style="font-size:12px;">CB ratio breach — ${fp(r)} (threshold 0.65%)</td><td style="font-size:12px;color:var(--muted);">${r>=0.009?'Escalate to senior management. Contact acquirer. Risk of Visa enforcement.':'Monitor weekly. Request merchant remediation plan.'}</td><td><span class="badge b-pend">Open</span></td></tr>`);
+    }
+  });
+  disc.forEach(s=>{
+    flags.push(`<tr><td><span class="badge b-warn">Medium</span></td><td><span class="mid">${s.mid}</span></td><td style="font-size:12px;">Settlement discrepancy — ${f(Math.abs(s.diff))} ${s.diff<0?'shortfall':'surplus'} on ${s.date}</td><td style="font-size:12px;color:var(--muted);">Obtain written explanation from acquirer. Document in audit log. Escalate if unresolved after 5 business days.</td><td><span class="badge b-pend">Open</span></td></tr>`);
+  });
+  body.innerHTML = flags.length ? flags.join('') : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No open risk flags — all thresholds within limits ✓</td></tr>';
+}
+
+function renderComplianceCBLog() {
+  const el=document.getElementById('co-cb-body');
+  if(!el) return;
+  const mids=[...new Set(statements.map(s=>s.mid))];
+  el.innerHTML=mids.map(mid=>{
+    const ss=statements.filter(s=>s.mid===mid), g=ss.reduce((a,s)=>a+s.gross,0), c=ss.reduce((a,s)=>a+s.cb,0), r=g>0?c/g:0;
+    const sev=r>=0.015?'Critical':r>=0.009?'High':r>=0.0065?'Medium':'—';
+    const sc=r>=0.009?'b-disc':r>=0.0065?'b-warn':'b-pend';
+    const breached=r>=0.015?'HCM (≥1.80%)':r>=0.009?'ECM (≥0.90%)':r>=0.0065?'VAMP (≥0.65%)':'None';
+    return `<tr>
+      <td class="mono" style="font-size:11px;">${ss[0]?.date||'—'}</td>
+      <td><span class="mid">${mid}</span></td>
+      <td style="font-size:12px;">${mMap[mid]?.name||mid}</td>
+      <td class="mono" style="color:${r>=0.009?'var(--red)':r>=0.0065?'var(--amber)':'var(--green)'};">${fp(r)}</td>
+      <td style="font-size:12px;color:${r>=0.0065?'var(--red)':'var(--muted)'};">${breached}</td>
+      <td><span class="badge ${sc}">${sev}</span></td>
+      <td style="font-size:11px;color:var(--muted);">CB ratio monitored via ReconIQ automated system. Flag generated on statement date. Compliance review required.</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderComplianceReserves() {
+  const el=document.getElementById('co-reserve-body');
+  if(!el) return;
+  el.innerHTML=statements.map(s=>`
+    <tr>
+      <td><span class="mid">${s.mid}</span></td>
+      <td style="font-size:12px;">${mMap[s.mid]?.name||s.mid}</td>
+      <td class="mono" style="font-size:11px;">${s.date}</td>
+      <td class="mono" style="color:var(--amber);font-weight:600;">${f(s.reserve)}</td>
+      <td class="mono">${mMap[s.mid]?.res_pct||'—'}</td>
+      <td class="mono">${s.period}d</td>
+      <td class="mono">${s.rel}</td>
+      <td style="font-size:11px;color:var(--muted);">Acquirer contract — rolling reserve clause per merchant agreement</td>
+      <td><span class="badge b-pend">Held</span></td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// ACTION DRAWER
+// ═══════════════════════════════════════════════
+window.showDrawer = function(mid, type) {
+  document.getElementById('drawer-root')?.remove();
+  const ss=statements.filter(s=>s.mid===mid);
+  const g=ss.reduce((a,s)=>a+s.gross,0), c=ss.reduce((a,s)=>a+s.cb,0), r=g>0?c/g:0;
+  const res=ss.reduce((a,s)=>a+s.reserve,0), disc=ss.filter(s=>s.diff!==0).length;
+  const m=mMap[mid]||{name:mid};
+  const mode=currentMode;
+
+  const steps = r>=0.015 ? [
+    mode==='merchant'?'Contact your acquirer account manager immediately — today, not tomorrow. Use the phrase "I am aware my ratio has entered HCM territory and I have a remediation plan." Self-reporting matters.':'Immediately suspend MID processing privileges pending review',
+    mode==='merchant'?'Ask your acquirer for a full chargeback reason code breakdown. You need to know which transaction types are generating disputes before you can fix anything.':'Issue formal written notice to merchant citing HCM threshold breach (≥1.80%)',
+    mode==='merchant'?'Review your transaction descriptor. The name appearing on cardholder bank statements must match what they recognise from your website or emails.':'Increase reserve holding percentage — minimum +5% pending improvement',
+    mode==='merchant'?'Make your refund process faster and more visible. A customer who can get a refund in 24 hours will not raise a chargeback.':'Request merchant remediation plan in writing within 5 business days',
+    mode==='merchant'?'Document your remediation steps in writing. One-page plan: root cause, actions taken, expected timeline. Send it to your acquirer before they ask.':'Set 30-day review date — if no improvement, begin contract termination process',
+  ] : r>=0.009 ? [
+    mode==='merchant'?'Email your acquirer account manager this week. Reference the ECM threshold (0.90%) and state you are building a remediation plan.':'Issue formal written notice — ECM threshold breached. Merchant has 30 days to demonstrate improvement.',
+    mode==='merchant'?'Get a chargeback reason code report from your acquirer. The codes will tell you exactly what customers are disputing — use this to prioritise.':'Schedule bi-weekly chargeback ratio review calls with the merchant',
+    mode==='merchant'?'If you offer subscriptions or recurring billing, audit your cancellation flow. Customers who cannot cancel easily dispute the charge instead.':'Apply additional reserve hold of 2–5% as risk buffer pending improvement',
+    mode==='merchant'?'Consider implementing 3DS2 authentication on high-value transactions — this shifts liability away from you on disputed authorised transactions.':'Log formal notice with timestamp in compliance record',
+  ] : r>=0.0065 ? [
+    mode==='merchant'?'Your ratio has entered Visa VAMP monitoring. Send a written acknowledgement to your acquirer that you are aware and monitoring it.':'Send written warning to merchant — VAMP monitoring entry confirmed',
+    mode==='merchant'?'Pull a chargeback report from your payment dashboard and identify the top 3 dispute categories by value.':'Request explanation of CB root causes within 5 business days',
+    mode==='merchant'?'Set a weekly internal alert to track your ratio. You need to see whether it is trending up or down before your next acquirer review.':'Monitor CB ratio weekly — flag any upward trend above 0.75% immediately',
+  ] : [
+    mode==='merchant'?'Your ratio is within safe limits. No action required this period.':'No action required — this merchant is within safe thresholds',
+    mode==='merchant'?'Continue monitoring monthly. Set a calendar reminder to check your chargeback ratio after each settlement cycle.':'Continue standard monthly monitoring cycle',
+  ];
+
+  const statusBg=r>=0.009?'background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.2);color:var(--red)':r>=0.0065?'background:rgba(212,134,58,0.1);border:1px solid rgba(212,134,58,0.2);color:var(--amber)':'background:rgba(76,175,125,0.1);border:1px solid rgba(76,175,125,0.2);color:var(--green)';
+  const statusTxt=r>=0.015?'🔴 CRITICAL — HCM Breach':r>=0.009?'🔴 HIGH RISK — ECM Breach':r>=0.0065?'🟡 MONITOR — VAMP Entry':'🟢 OK — Within Safe Zone';
+
+  const root=document.createElement('div');
+  root.id='drawer-root';
+  root.innerHTML=`
+    <div class="drawer-overlay" onclick="document.getElementById('drawer-root').remove()"></div>
+    <div class="drawer">
+      <button class="drawer-close" onclick="document.getElementById('drawer-root').remove()">×</button>
+      <div style="margin-bottom:20px;">
+        <div style="font-family:var(--font-serif);font-size:22px;">${m.name}</div>
+        <div style="font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-top:3px;">${mid} · ${m.type||''} · ${m.jur||''}</div>
+      </div>
+      <div class="drawer-kpis">
+        <div class="drawer-kpi"><div class="drawer-kpi-lbl">CB Ratio</div><div class="drawer-kpi-val" style="color:${r>=0.009?'var(--red)':r>=0.0065?'var(--amber)':'var(--green)'}">${fp(r)}</div></div>
+        <div class="drawer-kpi"><div class="drawer-kpi-lbl">Gross Volume</div><div class="drawer-kpi-val">${f(g)}</div></div>
+        <div class="drawer-kpi"><div class="drawer-kpi-lbl">Reserve Held</div><div class="drawer-kpi-val" style="color:var(--amber)">${f(res)}</div></div>
+        <div class="drawer-kpi"><div class="drawer-kpi-lbl">Discrepancies</div><div class="drawer-kpi-val" style="color:${disc>0?'var(--red)':'var(--green)'}">${disc>0?disc+' ⚠':'✓ None'}</div></div>
+      </div>
+      <div class="drawer-status" style="${statusBg}">${statusTxt}</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">
+        ${mode==='merchant'?'What You Should Do':'Required Actions as FI'}
+      </div>
+      <div class="step-list">${steps.map((s,i)=>`<div class="step-item"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('')}</div>
+      <div class="drawer-hist">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Statement History</div>
+        ${ss.map(st=>`<div class="hist-row"><span class="mono" style="color:var(--muted);font-size:11px;">${st.date}</span><span>Gross: ${f(st.gross)}</span><span style="color:${st.diff===0?'var(--green)':'var(--red)'};">${st.diff===0?'✓ Matched':'⚠ '+f(Math.abs(st.diff))}</span></div>`).join('')}
+      </div>
+    </div>`;
+  document.body.appendChild(root);
+};
+
+// ═══════════════════════════════════════════════
+// FORMS
+// ═══════════════════════════════════════════════
+function aTab(el, form) {
+  document.querySelectorAll('#panel-add .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('add-stmt').style.display  = form==='stmt'  ?'block':'none';
+  document.getElementById('add-sett').style.display  = form==='sett'  ?'block':'none';
+  document.getElementById('add-merch').style.display = form==='merch' ?'block':'none';
+}
+function liveCalc() {
+  const g=parseFloat(document.getElementById('f-gross').value)||0;
+  if(!g) return;
+  const fee=parseFloat(document.getElementById('f-fee').value)||0;
+  const ref=parseFloat(document.getElementById('f-refund').value)||0;
+  const cb=parseFloat(document.getElementById('f-cb').value)||0;
+  const res=parseFloat(document.getElementById('f-res').value)||0;
+  const p=parseInt(document.getElementById('f-period').value)||180;
+  const dt=document.getElementById('f-date').value;
+  const net=g-fee-ref-cb-res, cbr=g>0?cb/g:0;
+  const d=new Date(dt||Date.now()); d.setDate(d.getDate()+p);
+  document.getElementById('f-net').value=net.toFixed(2);
+  const el=id=>document.getElementById(id);
+  if(el('p-cbr')){el('p-cbr').textContent=fp(cbr);el('p-cbr').style.color=cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)';}
+  if(el('p-rel')) el('p-rel').textContent=d.toISOString().split('T')[0];
+  if(el('p-status')){const s=cbr>=0.015?'🔴 CRITICAL':cbr>=0.009?'🔴 HIGH RISK':cbr>=0.0065?'🟡 MONITOR':'🟢 OK';el('p-status').textContent=s;el('p-status').style.color=cbr>=0.009?'var(--red)':cbr>=0.0065?'var(--amber)':'var(--green)';}
+  document.getElementById('calc-prev').style.display='block';
+}
+function clearStmt(){['f-gross','f-fee','f-refund','f-cb','f-res','f-net','f-date'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('calc-prev').style.display='none';}
+function saveStmt(){
+  const mid=document.getElementById('f-mid').value, dt=document.getElementById('f-date').value, g=parseFloat(document.getElementById('f-gross').value)||0;
+  if(!mid||!dt||!g){notify('Complete MID, date and gross amount','warn');return;}
+  const fee=parseFloat(document.getElementById('f-fee').value)||0, ref=parseFloat(document.getElementById('f-refund').value)||0, cb=parseFloat(document.getElementById('f-cb').value)||0, res=parseFloat(document.getElementById('f-res').value)||0, p=parseInt(document.getElementById('f-period').value)||180;
+  const net=g-fee-ref-cb-res, cbr=g>0?cb/g:0;
+  const d=new Date(dt); d.setDate(d.getDate()+p);
+  statements.push({mid,date:dt,gross:g,fee,refund:ref,cb,reserve:res,received:net,period:p,net,diff:0,cbr,rel:d.toISOString().split('T')[0],cbStatus:cbr>=0.015?'critical':cbr>=0.009?'high':cbr>=0.0065?'monitor':'ok',reconStatus:'matched'});
+  clearStmt(); notify('Statement for '+mid+' saved','ok');
+}
+function saveSett(){const mid=document.getElementById('s-mid').value;if(!mid){notify('Select a MID','warn');return;}notify('Settlement for '+mid+' recorded','ok');}
+function saveMerch(){
+  const mid=document.getElementById('m-mid').value, name=document.getElementById('m-name').value;
+  if(!mid||!name){notify('MID and merchant name required','warn');return;}
+  merchants.push({mid,name,type:document.getElementById('m-type').value,jur:document.getElementById('m-jur').value,res_pct:document.getElementById('m-res-pct').value,res_days:parseInt(document.getElementById('m-period').value)||180,status:'Active'});
+  mMap[mid]={mid,name}; notify(mid+' — '+name+' registered','ok');
+}
+
+// ═══════════════════════════════════════════════
+// CSV UPLOAD & REPORTS
+// ═══════════════════════════════════════════════
+window.handleFileUpload = function(input) {
+  const file=input.files[0]; if(!file) return;
+  const st=document.getElementById('upload-status');
+  st.style.display='block'; st.style.background='rgba(74,144,196,0.1)'; st.style.border='1px solid rgba(74,144,196,0.2)'; st.style.color='var(--blue)'; st.textContent='⏳ Parsing '+file.name+'...';
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const rows=e.target.result.split('\n').filter(r=>r.trim()); let imported=0;
+      for(let i=1;i<rows.length;i++){
+        const v=rows[i].split(',').map(x=>x.trim().replace(/"/g,''));
+        if(v.length<13||!v[0]||!v[7]) continue;
+        const mid=v[0],name=v[1],type=v[2],jur=v[3],res_pct=v[4],res_days=parseInt(v[5])||180,date=v[6];
+        const gross=parseFloat(v[7])||0,fee=parseFloat(v[8])||0,refund=parseFloat(v[9])||0,cb=parseFloat(v[10])||0,reserve=parseFloat(v[11])||0,received=parseFloat(v[12])||0;
+        if(!mMap[mid]){merchants.push({mid,name,type,jur,res_pct,res_days,status:'Active'});mMap[mid]={mid,name};}
+        const net=gross-fee-refund-cb-reserve,diff=received-net,cbr=gross>0?cb/gross:0;
+        const d=new Date(date); d.setDate(d.getDate()+res_days);
+        statements.push({mid,date,gross,fee,refund,cb,reserve,received,period:res_days,net,diff,cbr,rel:d.toISOString().split('T')[0],cbStatus:cbr>=0.015?'critical':cbr>=0.009?'high':cbr>=0.0065?'monitor':'ok',reconStatus:diff===0?'matched':diff>0?'over':'disc'});
+        imported++;
+      }
+      st.style.background='rgba(76,175,125,0.1)'; st.style.border='1px solid rgba(76,175,125,0.2)'; st.style.color='var(--green)';
+      st.textContent='✓ Imported '+imported+' records from '+file.name;
+      notify(imported+' records imported','ok');
+    }catch(err){st.style.background='rgba(224,82,82,0.1)';st.style.color='var(--red)';st.textContent='❌ Error parsing file — check column format';}
+  };
+  reader.readAsText(file);
+};
+window.handleDrop=function(e){
+  e.preventDefault(); document.getElementById('upload-zone').style.borderColor='rgba(244,168,50,0.25)';
+  const file=e.dataTransfer.files[0]; if(!file) return;
+  const input=document.getElementById('csv-upload');
+  try{const dt=new DataTransfer();dt.items.add(file);input.files=dt.files;}catch(x){} handleFileUpload(input);
+};
+window.downloadTemplate=function(){
+  const csv='MID,Merchant_Name,Business_Type,Jurisdiction,Reserve_Pct,Reserve_Days,Statement_Date,Gross_Amount,Fee_Amount,Refund_Amount,Chargeback_Amount,Reserve_Held,Bank_Received\nMID006,Example Merchant Ltd,eCommerce,United Kingdom,10%,180,2026-02-01,10000,600,200,150,1000,8050';
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='ReconIQ_Template.csv'; a.click(); notify('Template downloaded','ok');
+};
+window.generateReport=function(type){
+  const now=new Date(), d=now.toISOString().split('T')[0];
+  let csv='ReconIQ Report — '+type+'\nGenerated,'+now.toLocaleString()+'\n\nMID,Merchant,Date,Gross,Fees,Refunds,CB,Reserve,Net Expected,Received,Difference,Status,CB Ratio\n';
+  statements.forEach(s=>csv+=[s.mid,mMap[s.mid]?.name,s.date,s.gross,s.fee,s.refund,s.cb,s.reserve,s.net,s.received,s.diff,s.reconStatus,fp(s.cbr)].join(',')+'\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='ReconIQ_'+type+'_'+d+'.csv'; a.click(); notify('Report downloaded','ok');
+};
+
+// ═══════════════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════════════
+window.obNext=function(n){
+  document.querySelectorAll('.onboard-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('ob'+n)?.classList.add('active');
+};
+window.closeOnboard=function(){
+  const ob=document.getElementById('onboard');
+  ob.style.transition='opacity 0.3s'; ob.style.opacity='0';
+  setTimeout(()=>{ob.style.display='none';
+    const mo=document.getElementById('mode-overlay');
+    mo.style.display='flex'; mo.style.opacity='0';
+    requestAnimationFrame(()=>{mo.style.transition='opacity 0.4s'; mo.style.opacity='1';});
+  },300);
+};
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildNav('merchant');
+  renderMerchantOverview();
+});
+</script>
+</body>
+</html>
